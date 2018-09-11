@@ -408,7 +408,11 @@ void *YoloObjectDetector::detectInThread()
 	  cv::rectangle(label_im,
                         cv::Point(xmin*label_im.cols,ymin*label_im.rows),
                         cv::Point(xmax*label_im.cols,ymax*label_im.rows),
-                        cv::Scalar::all(i), CV_FILLED);
+                        cv::Scalar::all(count + 1), CV_FILLED);
+	  // The correct is to use labels correspondent to the original class number, as in cv::Scalar::all(j)
+	  // However, since this causes jsk_pcl/ClusterPointIndicesDecomposer to be extremely slow, here we use count + 1
+	  // This problem has been solved in https://github.com/jsk-ros-pkg/jsk_recognition/pull/2326
+	  // Using the above and compiling jsk_recognition from source allows fast execution even with sparse labeling
 
           roiBoxes_[count].x = x_center;
           roiBoxes_[count].y = y_center;
