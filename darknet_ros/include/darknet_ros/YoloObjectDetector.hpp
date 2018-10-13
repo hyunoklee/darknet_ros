@@ -24,6 +24,7 @@
 #include <actionlib/server/simple_action_server.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
+#include <std_msgs/String.h>
 #include <geometry_msgs/Point.h>
 #include <image_transport/image_transport.h>
 
@@ -101,6 +102,12 @@ class YoloObjectDetector
    */
   void cameraCallback(const sensor_msgs::ImageConstPtr& msg);
 
+
+  /*!
+   * Callback of targetObject.
+   */
+  void targetObjectCallback(const std_msgs::String::ConstPtr& msg);
+
   /*!
    * Check for objects action goal callback.
    */
@@ -143,6 +150,7 @@ class YoloObjectDetector
 
   //! ROS subscriber and publisher.
   image_transport::Subscriber imageSubscriber_;
+  ros::Subscriber targetObjectSubscriber_;
   ros::Publisher objectPublisher_;
   ros::Publisher boundingBoxesPublisher_;
 

@@ -24,6 +24,7 @@ char *cfg;
 char *weights;
 char *data;
 char **detectionNames;
+std::string targetObjectList[] = {"apple"};
 
 YoloObjectDetector::YoloObjectDetector(ros::NodeHandle nh)
     : nodeHandle_(nh),
@@ -175,6 +176,8 @@ void YoloObjectDetector::init()
   labelImagePublisher_ = nodeHandle_.advertise<sensor_msgs::Image>(labelImageTopicName,
 								   labelImageQueueSize,
 								   labelImageLatch);
+  targetObjectSubscriber_ = nodeHandle_.subscribe("/targetObjectSubscriber", 10,
+                                               &YoloObjectDetector::targetObjectCallback,this);
 
   // Action servers.
   std::string checkForObjectsActionName;
@@ -187,6 +190,13 @@ void YoloObjectDetector::init()
   checkForObjectsActionServer_->registerPreemptCallback(
       boost::bind(&YoloObjectDetector::checkForObjectsActionPreemptCB, this));
   checkForObjectsActionServer_->start();
+}
+
+void YoloObjectDetector::targetObjectCallback(const std_msgs::String::ConstPtr& msg)
+{
+  ROS_INFO("I heard: [%s]", msg->data.c_str());
+  targetObjectList[0] = msg->data.c_str();
+  return;
 }
 
 void YoloObjectDetector::cameraCallback(const sensor_msgs::ImageConstPtr& msg)
@@ -396,6 +406,10 @@ void *YoloObjectDetector::detectInThread()
     // iterate through possible boxes and collect the bounding boxes
     for (j = 0; j < demoClasses_; ++j) {
       if (dets[i].prob[j]) {
+	if ( strcmp( demoNames_[j],targetObjectList[0].c_str()) != 0 ) {
+           continue ;
+	}
+	//printf("%d, %s: %.0f%%\n", strcmp( demoNames_[j],targetObjectList[0].c_str()), demoNames_[j], dets[i].prob[j]*100);
         float x_center = (xmin + xmax) / 2;
         float y_center = (ymin + ymax) / 2;
         float BoundingBox_width = xmax - xmin;
